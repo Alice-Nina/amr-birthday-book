@@ -131,6 +131,29 @@ const seed=[
 {name:"Queen",day:11,month:5,sign:"Taurus",element:"Earth",stone:"Emerald",flower:"Lily",scent:"Rose, soft vanilla and sandalwood",character:"Mufasa: calm, strength and loyalty",food:"Dark chocolate with strawberries: classic, indulgent and special",song:"Flowers — Miley Cyrus",surprise:"Taurus is a fixed earth sign, traditionally linked with persistence and appreciation of the senses.",moon26:"Waning crescent (approx.)",moon27:"Waxing crescent (approx.)",dedications:[]}
 ];
 let friends=JSON.parse(localStorage.getItem("amrBookFriends")||"null")||seed;
+// Keep one confirmed Slim profile, including messages from older local copies.
+function normalizeSlimBirthday(){
+ const matches=friends.filter(p=>String(p.name||'').trim().toLowerCase()==='slim');
+ if(!matches.length)return;
+ const keep=matches.find(p=>p.day===19&&p.month===11)||matches[0];
+ const messages=matches.flatMap(p=>p.dedications||[]);
+ keep.name='Slim';keep.day=19;keep.month=11;keep.sign='Scorpio';
+ keep.dedications=[...new Map(messages.map(d=>[JSON.stringify(d),d])).values()];
+ friends=friends.filter(p=>String(p.name||'').trim().toLowerCase()!=='slim'||p===keep);
+}
+normalizeSlimBirthday();
+// Confirmed AMR birthdays, included even when this browser has an older saved copy.
+const confirmedBirthdays=[
+ {name:"Bilbo",day:13,month:10,sign:"Libra",dedications:[]},
+ {name:"Slim",day:19,month:11,sign:"Scorpio",dedications:[]},
+ {name:"Good Karma",day:21,month:2,sign:"Pisces",dedications:[]}
+];
+for(const birthday of confirmedBirthdays){
+ const existing=friends.find(p=>p.name.trim().toLowerCase()===birthday.name.toLowerCase());
+ if(existing)Object.assign(existing,{day:birthday.day,month:birthday.month,sign:birthday.sign});
+ else friends.push({...birthday,dedications:[]});
+}
+
 if(!friends.some(p=>p.name.toLowerCase()==="b.father"))friends.push({name:"B.Father",day:16,month:11,sign:"Scorpio",dedications:[]});
 // Editorial suggestions are editable; they are not claims about personal preferences.
 function completeProfile(p){
@@ -276,6 +299,7 @@ window.amrApplyCloud = function(records){
   if(byName.has(key))Object.assign(byName.get(key),updated);
   else {friends.push(updated);byName.set(key,updated)}
  }
+ normalizeSlimBirthday();
  save();render();
  if(selected){const latest=friends.find(p=>p.name.toLowerCase()===selected.name.toLowerCase());if(latest && !$('modal').classList.contains('hidden') && $('dedText') && !$('dedText').value)openPerson(latest)}
 };
