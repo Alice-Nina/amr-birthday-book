@@ -164,7 +164,7 @@ function renderCalendar(){
  $("forwardMonth").onclick=()=>{month=(month+1)%12;render()};
  document.querySelectorAll("[data-day]").forEach(el=>el.onclick=()=>{let p=friends.find(x=>x.day===+el.dataset.day&&x.month===month+1);if(p)openPerson(p)});
 }
-window.amrApplyDedications=(items)=>{sharedDedications=items;if(selected&&!$("modal").classList.contains("hidden")&&!$("dedText")?.value){const p=friends.find(x=>x.name.toLowerCase()===selected.name.toLowerCase());if(p)openPerson(p)}};
+window.amrApplyDedications=(items)=>{sharedDedications=items;if(selected&&!$("modal").classList.contains("hidden")&&$("dedText") && !$("dedText").value){const p=friends.find(x=>x.name.toLowerCase()===selected.name.toLowerCase());if(p)openPerson(p)}};
 function renderPeople(){
  $("page").innerHTML=`<div class="pagehead"><div class="kicker">The People Behind the Castles</div><h2>Our Friends</h2><div class="sub">Open a profile to learn more and leave a message</div></div><div class="cards">${friends.map((p,i)=>`<article class="person" data-person="${i}"><h3>✦ ${esc(p.name)}</h3><p>${String(p.day).padStart(2,"0")} ${months[p.month-1]} · ${esc(p.sign||signFor(p.day,p.month))}</p><span class="pill">${esc(p.element||"Element not set")}</span><span class="pill">🌙 Moon & memories</span></article>`).join("")}</div>`;
  document.querySelectorAll("[data-person]").forEach(el=>el.onclick=()=>openPerson(friends[+el.dataset.person]));
@@ -191,6 +191,7 @@ function openPerson(p){
  $("editPerson").onclick=()=>editForm(p);
 }
 function editForm(p=null){
+ $("modal").classList.remove("hidden");
  const isNew=!p;p=p||{name:"",day:"",month:"",sign:"",element:"",stone:"",flower:"",scent:"",character:"",food:"",song:"",surprise:"",moon26:"",moon27:"",dedications:[]};
  $("modalContent").innerHTML=`<div class="kicker">${isNew?"Grow the AMR Family":"Update Memories"}</div><h2>${isNew?"Add Birthday":"Edit Profile"}</h2><div class="formgrid">
  ${field("Name","name",p.name)}${field("Day","day",p.day,"number")}${field("Month","month",p.month,"number")}
@@ -200,7 +201,7 @@ function editForm(p=null){
  </div><div class="formactions"><button id="savePerson">Save Changes</button><button class="secondary" id="cancelEdit">Cancel</button>${!isNew?'<button class="secondary" id="deletePerson">Delete Birthday</button>':""}</div><p class="note">Birth years are neither requested nor stored. Symbolic details can be freely edited.</p>`;
  $("savePerson").onclick=()=>{
   const val=k=>$("f_"+k).value.trim();const day=Number(val("day")),m=Number(val("month"));
-  if(!val("name")||!Number.isInteger(day)||day<1||day>31||!Number.isInteger(m)||m<1||m>12){alert("Enter a name and a valid day and month.");return}
+  if(!val("name")||!Number.isInteger(day)||day<1||day>31||!Number.isInteger(m)||m<1||m>12||day>new Date(2000,m,0).getDate()){alert("Enter a name and a valid day and month.");return}
   const updated={...p,name:val("name"),day,month:m,sign:val("sign")||signFor(day,m),element:val("element"),stone:val("stone"),flower:val("flower"),scent:val("scent"),character:val("character"),food:val("food"),song:val("song"),surprise:val("surprise"),moon26:val("moon26"),moon27:val("moon27"),dedications:p.dedications||[]};
   if(isNew)friends.push(updated);else Object.assign(p,updated);
   save();window.amrCloudSave?.(updated);$("modal").classList.add("hidden");render();
@@ -283,7 +284,7 @@ window.amrApplyCloud = function(records){
   else {friends.push(updated);byName.set(key,updated)}
  }
  save();render();
- if(selected){const latest=friends.find(p=>p.name.toLowerCase()===selected.name.toLowerCase());if(latest && !$('modal').classList.contains('hidden') && !$('dedText')?.value)openPerson(latest)}
+ if(selected){const latest=friends.find(p=>p.name.toLowerCase()===selected.name.toLowerCase());if(latest && !$('modal').classList.contains('hidden') && $('dedText') && !$('dedText').value)openPerson(latest)}
 };
 
 render();
