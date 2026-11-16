@@ -133,14 +133,7 @@ const seed=[
 let friends=JSON.parse(localStorage.getItem("amrBookFriends")||"null")||seed;
 if(!friends.some(p=>p.name.toLowerCase()==="b.father"))friends.push({name:"B.Father",day:16,month:11,sign:"Scorpio",dedications:[]});
 // Editorial suggestions are editable; they are not claims about personal preferences.
-const monthlySymbols={1:["Garnet","Carnation"],2:["Amethyst","Violet"],3:["Aquamarine","Daffodil"],4:["Diamond","Daisy"],5:["Emerald","Lily of the valley"],6:["Pearl","Rose"],7:["Ruby","Larkspur"],8:["Peridot","Gladiolus"],9:["Sapphire","Aster"],10:["Opal or tourmaline","Marigold"],11:["Topaz or citrine","Chrysanthemum"],12:["Turquoise","Narcissus"]};
-const themedSuggestions={11:{scent:"Sandalwood and cedar · a magical suggestion",character:"Gandalf · a fictional match",food:"Dark chocolate with orange · a playful suggestion",surprise:"A November birthday under the sign of Scorpio"}};
 function completeProfile(p){
- const symbols=monthlySymbols[Number(p.month)]||[];
- const suggestions=themedSuggestions[Number(p.month)]||{};
- const generic={scent:"Warm vanilla and cedar · a magical suggestion",character:"A legendary dragon guardian · a fictional match",food:"Honey cake and cinnamon · a playful suggestion",song:"Choose a song to dedicate",surprise:"A special page for an AMR friend"};
- for(const k of ['stone','flower'])if(!p[k])p[k]=symbols[k==='stone'?0:1]||'Add your choice';
- for(const k of ['scent','character','food','song','surprise'])if(!p[k])p[k]=suggestions[k]||generic[k];
  if(!p.sign)p.sign=signFor(Number(p.day),Number(p.month));
  return p;
 }
@@ -166,7 +159,7 @@ function renderCalendar(){
 }
 window.amrApplyDedications=(items)=>{sharedDedications=items;if(selected&&!$("modal").classList.contains("hidden")&&$("dedText") && !$("dedText").value){const p=friends.find(x=>x.name.toLowerCase()===selected.name.toLowerCase());if(p)openPerson(p)}};
 function renderPeople(){
- $("page").innerHTML=`<div class="pagehead"><div class="kicker">The People Behind the Castles</div><h2>Our Friends</h2><div class="sub">Open a profile to learn more and leave a message</div></div><div class="cards">${friends.map((p,i)=>`<article class="person" data-person="${i}"><h3>✦ ${esc(p.name)}</h3><p>${String(p.day).padStart(2,"0")} ${months[p.month-1]} · ${esc(p.sign||signFor(p.day,p.month))}</p><span class="pill">${esc(p.element||"Element not set")}</span><span class="pill">🌙 Moon & memories</span></article>`).join("")}</div>`;
+ $("page").innerHTML=`<div class="pagehead"><div class="kicker">The People Behind the Castles</div><h2>Our Friends</h2><div class="sub">Open a profile to learn more and leave a message</div></div><div class="cards">${friends.map((p,i)=>`<article class="person" data-person="${i}"><h3>✦ ${esc(p.name)}</h3><p>${String(p.day).padStart(2,"0")} ${months[p.month-1]} · ${esc(p.sign||signFor(p.day,p.month))}</p></article>`).join("")}</div>`;
  document.querySelectorAll("[data-person]").forEach(el=>el.onclick=()=>openPerson(friends[+el.dataset.person]));
 }
 function renderCover(){
@@ -178,12 +171,7 @@ function openPerson(p){
  selected=p;
  const cloudMessages=sharedDedications.filter(d=>String(d.cumpleanero||'').trim().toLowerCase()===p.name.trim().toLowerCase()).map(d=>({from:d.nombre,text:d.mensaje}));
  const ded=[...cloudMessages,...(p.dedications||[]).filter(d=>!d._cloudPending)].map(d=>`<div class="dedication">${esc(d.text)}<small>— ${esc(d.from||"An AMR friend")}</small></div>`).join("")||`<p class="sub">No messages yet. Be the first to leave one!</p>`;
- $("modalContent").innerHTML=`<div class="kicker">A Page to Celebrate</div><h2>✦ ${esc(p.name)} ✦</h2><p class="sub">${String(p.day).padStart(2,"0")} ${months[p.month-1]} · ${esc(p.sign||signFor(p.day,p.month))} · ${esc(p.element||"")}</p><div class="detail">
- <div class="fact"><b>Your Scent</b><span>${esc(p.scent||"To be discovered")}</span></div><div class="fact"><b>Fictional Character</b><span>${esc(p.character||"To be discovered")}</span></div>
- <div class="fact"><b>Your Favorite Flavor</b><span>${esc(p.food||"To be discovered")}</span></div><div class="fact"><b>Your Song</b><span>${esc(p.song||"To be discovered")}</span></div>
- <div class="fact"><b>Birthstone</b><span>${esc(p.stone||"To be discovered")}</span></div><div class="fact"><b>Birth Flower</b><span>${esc(p.flower||"To be discovered")}</span></div>
- <div class="fact"><b>Moon Phase · 2026</b><span>${esc(p.moon26||"Awaiting astronomical verification")}</span></div><div class="fact"><b>Moon Phase · 2027</b><span>${esc(p.moon27||"Awaiting astronomical verification")}</span></div>
- </div><div class="fact" style="margin-top:12px"><b>A Fun Fact</b><span>${esc(p.surprise||"Add a fun fact here!")}</span></div>
+ $("modalContent").innerHTML=`<div class="kicker">A Page to Celebrate</div><h2>✦ ${esc(p.name)} ✦</h2><p class="sub">${String(p.day).padStart(2,"0")} ${months[p.month-1]} · ${esc(p.sign||signFor(p.day,p.month))}</p>
  <div class="dedications"><h3 style="font-weight:normal;color:#182640">💌 Messages from the AMR Family</h3>${ded}
  <label>Your Name<input id="dedFrom" placeholder="Who is writing?"></label><label>Your Message<textarea id="dedText" placeholder="Leave a few words, a memory, or birthday wishes..."></textarea></label><div class="formactions"><button id="saveDed">Save Message</button><button class="secondary" id="editPerson">Edit Profile</button></div></div>`;
  $("modal").classList.remove("hidden");
@@ -195,16 +183,21 @@ function editForm(p=null){
  const isNew=!p;p=p||{name:"",day:"",month:"",sign:"",element:"",stone:"",flower:"",scent:"",character:"",food:"",song:"",surprise:"",moon26:"",moon27:"",dedications:[]};
  $("modalContent").innerHTML=`<div class="kicker">${isNew?"Grow the AMR Family":"Update Memories"}</div><h2>${isNew?"Add Birthday":"Edit Profile"}</h2><div class="formgrid">
  ${field("Name","name",p.name)}${field("Day","day",p.day,"number")}${field("Month","month",p.month,"number")}
- ${field("Zodiac Sign","sign",p.sign)}${field("Element","element",p.element)}${field("Stone","stone",p.stone)}${field("Flower","flower",p.flower)}
- ${field("Scent","scent",p.scent)}${field("Fictional Character","character",p.character)}${field("Food or Flavor","food",p.food)}${field("Song","song",p.song)}
- ${field("Fun Fact","surprise",p.surprise)}${field("Moon Phase 2026 (editable)","moon26",p.moon26)}${field("Moon Phase 2027 (editable)","moon27",p.moon27)}
- </div><div class="formactions"><button id="savePerson">Save Changes</button><button class="secondary" id="cancelEdit">Cancel</button>${!isNew?'<button class="secondary" id="deletePerson">Delete Birthday</button>':""}</div><p class="note">Birth years are neither requested nor stored. Symbolic details can be freely edited.</p>`;
- $("savePerson").onclick=()=>{
+ ${field("Zodiac Sign","sign",p.sign)}
+ </div><div class="formactions"><button id="savePerson">Save Changes</button><button class="secondary" id="cancelEdit">Cancel</button>${!isNew?'<button class="secondary" id="deletePerson">Delete Birthday</button>':""}</div><p class="note">Only name, day, month and zodiac sign are needed. Leave the sign blank to calculate it automatically. No birth year is requested.</p>`;
+ $("savePerson").onclick=async()=>{
   const val=k=>$("f_"+k).value.trim();const day=Number(val("day")),m=Number(val("month"));
   if(!val("name")||!Number.isInteger(day)||day<1||day>31||!Number.isInteger(m)||m<1||m>12||day>new Date(2000,m,0).getDate()){alert("Enter a name and a valid day and month.");return}
-  const updated={...p,name:val("name"),day,month:m,sign:val("sign")||signFor(day,m),element:val("element"),stone:val("stone"),flower:val("flower"),scent:val("scent"),character:val("character"),food:val("food"),song:val("song"),surprise:val("surprise"),moon26:val("moon26"),moon27:val("moon27"),dedications:p.dedications||[]};
-  if(isNew)friends.push(updated);else Object.assign(p,updated);
-  save();window.amrCloudSave?.(updated);$("modal").classList.add("hidden");render();
+  const updated={...p,name:val("name"),day,month:m,sign:val("sign")||signFor(day,m),dedications:p.dedications||[]};
+  const btn=$("savePerson");btn.disabled=true;btn.textContent="Saving...";
+  try {
+   if(!window.amrCloudSave)throw Error("Firebase is not connected yet. Please wait and try again.");
+   await window.amrCloudSave(updated);
+   if(isNew)friends.push(updated);else Object.assign(p,updated);
+   save();$("modal").classList.add("hidden");render();
+  }catch(e){alert("Birthday was not saved online. Please try again.\n"+e.message);}
+  finally {btn.disabled=false;btn.textContent="Save Changes";}
+
  };
  $("cancelEdit").onclick=()=>{if(selected)openPerson(selected);else $("modal").classList.add("hidden")};
  if(!isNew)$("deletePerson").onclick=()=>{if(confirm("Delete this profile and its messages from this browser?")){friends=friends.filter(x=>x!==p);window.amrCloudDelete?.(p);save();$("modal").classList.add("hidden");render()}};
@@ -303,8 +296,8 @@ try {
  onSnapshot(dedCol,snapshot=>{window.amrApplyDedications(snapshot.docs.map(d=>({...d.data(),_id:d.id})))},e=>{status.textContent='⚠ Messages unavailable: '+e.message});
  const idFor=p=>p._cloudId||p.name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
  window.amrCloudSave=async p=>{
-  try {const id=idFor(p);await setDoc(doc(db,'cumpleanos',id),{nombre:p.name,dia:p.day,mes:p.month,dedications:p.dedications||[],sign:p.sign||'',element:p.element||'',stone:p.stone||'',flower:p.flower||'',scent:p.scent||'',character:p.character||'',food:p.food||'',song:p.song||'',surprise:p.surprise||'',moon26:p.moon26||'',moon27:p.moon27||''},{merge:true});status.textContent='☁ Saved to Firebase';}
-  catch(e){status.textContent='⚠ Cloud save failed: '+e.message;alert('Could not save to Firebase. Local copy was kept.');}
+  try {const id=idFor(p);await setDoc(doc(db,'cumpleanos',id),{nombre:p.name,dia:p.day,mes:p.month,sign:p.sign||''},{merge:true});status.textContent='☁ Saved to Firebase';}
+  catch(e){status.textContent='⚠ Cloud save failed: '+e.message;throw e;}
  };
  window.amrCloudDelete=async p=>{try{await deleteDoc(doc(db,'cumpleanos',idFor(p)))}catch(e){status.textContent='⚠ Delete failed: '+e.message}};
  onSnapshot(col,snapshot=>{
